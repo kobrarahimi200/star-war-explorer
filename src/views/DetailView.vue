@@ -2,7 +2,7 @@
 import { computed, onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useSwapiStore } from '@/stores/useSwapiStore'
-import type { Film, Person } from '@/components/types/swapiTypes'
+import type { Film, Person } from '@/types/swapi'
 
 const route = useRoute()
 const store = useSwapiStore()
@@ -12,8 +12,7 @@ const character = computed<Person | undefined>(() =>
 )
 
 const relatedFilms = computed<Film[]>(() => {
-  const filmUrls = new Set(character.value?.films ?? [])
-  return store.apiFilms.filter((film) => filmUrls.has(film.id))
+  return store.getFilmsForPerson(character.value?.films ?? [])
 })
 
 const isFavorite = computed(() =>

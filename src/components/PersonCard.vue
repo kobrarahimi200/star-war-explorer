@@ -2,7 +2,7 @@
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import { useSwapiStore } from '@/stores/useSwapiStore'
-import type { Person } from '@/components/types/swapiTypes'
+import type { Person } from '@/types/swapi'
 
 const props = defineProps<{
   person: Person
@@ -29,10 +29,10 @@ const isFavorite = computed(() => store.favorites.includes(props.person.id))
       </div>
     </div>
 
-    <div class="card-actions">
+    <div class="flex flex-wrap items-center justify-end gap-3">
       <button
         type="button"
-        class="favorite-button"
+        class="text-lg text-yellow-500 transition hover:scale-110"
         :class="{ active: isFavorite }"
         :aria-label="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
         @click="store.toggleFavorite(person.id)"
@@ -41,7 +41,7 @@ const isFavorite = computed(() => store.favorites.includes(props.person.id))
       </button>
       <RouterLink
         :to="{ name: 'person-detail', params: { id: person.id }, query: route.query }"
-        class="details-link"
+        class="text-sm font-medium text-blue-600 hover:text-blue-800"
       >
         View Details
       </RouterLink>
@@ -62,54 +62,3 @@ const isFavorite = computed(() => store.favorites.includes(props.person.id))
     </div>
   </article>
 </template>
-
-<style scoped>
-.person-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.2rem 1.25rem;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.9rem;
-}
-
-.person-card h3 {
-  margin: 0 0 0.35rem;
-}
-
-.person-card p {
-  margin: 0.2rem 0;
-  color: #4b5563;
-}
-
-.card-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.card-actions button {
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  padding: 0.4rem 0.7rem;
-  cursor: pointer;
-}
-
-.details-link {
-  padding: 0.4rem 0.7rem;
-  color: #1d4ed8;
-  text-decoration: none;
-}
-
-.favorite-button {
-  border: 0 !important;
-  color: #f59e0b;
-  font-size: 1.35rem;
-  padding: 0.25rem !important;
-}
-
-.delete-button {
-  color: #b91c1c;
-}
-</style>

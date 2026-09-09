@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 import { useSwapiStore } from '@/stores/useSwapiStore'
-import type { Person } from '@/components/types/swapiTypes'
+import type { Person } from '@/types/swapi'
 
 const props = defineProps<{
   isOpen: boolean
@@ -23,6 +23,10 @@ const form = reactive({
   birth_year: '',
 })
 
+const errors = reactive({
+  name: '',
+})
+
 const resetForm = () => {
   form.id = props.personToEdit?.id
   form.name = props.personToEdit?.name ?? ''
@@ -30,6 +34,7 @@ const resetForm = () => {
   form.mass = props.personToEdit?.mass ?? ''
   form.gender = props.personToEdit?.gender ?? ''
   form.birth_year = props.personToEdit?.birth_year ?? ''
+  errors.name = ''
 }
 
 watch(
@@ -40,7 +45,14 @@ watch(
   { immediate: true },
 )
 
+const validate = () => {
+  errors.name = form.name.trim() ? '' : 'Name is required.'
+  return !errors.name
+}
+
 const submit = () => {
+  if (!validate()) return
+
   store.savePerson({
     id: form.id,
     name: form.name,
@@ -66,7 +78,20 @@ const submit = () => {
 
       <label class="block">
         <span class="mb-1 block text-sm font-medium">Name</span>
-        <input v-model="form.name" required class="w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model="form.name"
+          required
+          aria-required="true"
+          :aria-invalid="Boolean(errors.name)"
+          :aria-describedby="errors.name ? 'name-error' : undefined"
+          class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          :class="errors.name ? 'border-red-500' : 'border-gray-300'"
+          @blur="validate"
+          @input="errors.name = ''"
+        />
+        <p v-if="errors.name" id="name-error" class="mt-1 text-sm text-red-600">
+          {{ errors.name }}
+        </p>
       </label>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

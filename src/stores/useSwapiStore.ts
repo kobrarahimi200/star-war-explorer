@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import type { Film, Person } from '@/components/types/swapiTypes'
+import type { Film, Person } from '@/types/swapi'
 
 interface SwapiPerson {
   name: string
@@ -86,9 +86,9 @@ export const useSwapiStore = defineStore('swapi', () => {
         starships: person.starships,
         films: person.films,
       }))
-      apiFilms.value = films.map((film): Film => ({
+      apiFilms.value = films.map((film, index): Film => ({
         ...film,
-        id: film.url,
+        id: film.url || `film_${index}`,
       }))
     } catch (err: unknown) {
       error.value = err instanceof Error ? err.message : 'Failed to load people'
@@ -99,6 +99,9 @@ export const useSwapiStore = defineStore('swapi', () => {
   }
 
   const fetchPeople = fetchInitialData
+
+  const getFilmsForPerson = (filmUrls: string[]) =>
+    apiFilms.value.filter((film) => filmUrls.includes(film.url))
 
   const savePerson = (data: Partial<Person> & { id?: string }) => {
     const id = data.id ?? `custom_${Date.now()}`
@@ -151,6 +154,7 @@ export const useSwapiStore = defineStore('swapi', () => {
     favoritePeople,
     favorites,
     apiFilms,
+    getFilmsForPerson,
     localPeople,
     deletedIds,
     isLoading,
