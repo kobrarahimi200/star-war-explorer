@@ -1,17 +1,10 @@
 <script setup lang="ts">
+import AppHeader from '@/components/AppHeader.vue';
 </script>
 
 <template>
   <div class="app-shell">
-    <header class="header">
-      <h1>Star Wars Explorer</h1>
-
-      <nav class="nav" aria-label="Main navigation">
-        <button type="button" class="nav-button active">People</button>
-        <button type="button" class="nav-button">Starships</button>
-        <button type="button" class="nav-button">⭐ Favorites</button>
-      </nav>
-    </header>
+    <AppHeader />
 
     <main class="main-content">
       <RouterView />

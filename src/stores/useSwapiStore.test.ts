@@ -142,4 +142,15 @@ describe('useSwapiStore', () => {
     expect(store.deletedIds).toContain('1')
     expect(JSON.parse(localStorage.getItem('swapi_deleted_ids') ?? '[]')).toContain('1')
   })
+
+  it('toggles favorites and persists the favorite ids', () => {
+    const store = useSwapiStore()
+
+    store.toggleFavorite('custom_1')
+    expect(store.favorites).toContain('custom_1')
+    expect(JSON.parse(localStorage.getItem('swapi_favorites') ?? '[]')).toContain('custom_1')
+
+    store.toggleFavorite('custom_1')
+    expect(store.favorites).not.toContain('custom_1')
+  })
 })

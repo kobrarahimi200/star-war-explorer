@@ -1,23 +1,29 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import PersonCard from '@/components/PersonCard.vue'
 import PersonModal from '@/components/PersonModal.vue'
 import { useSwapiStore } from '@/stores/useSwapiStore'
 import type { Person } from '@/components/types/swapiTypes'
 
 const store = useSwapiStore()
-
-const people = computed<Person[]>(() => store.allPeople)
+const route = useRoute()
+const router = useRouter()
 
 const search = ref('')
 const gender = ref('all')
+const sort = ref('name-asc')
+const showFavoritesOnly = ref(false)
 const isModalOpen = ref(false)
 const personToEdit = ref<Person | null>(null)
 
-const filteredPeople = computed(() => {
+const filteredPeople = computed<Person[]>(() => {
   const searchTerm = search.value.trim().toLowerCase()
+  const basePeople = showFavoritesOnly.value
+    ? store.favoritePeople
+    : store.allPeople
 
-  return people.value.filter((person) => {
+  const filtered = basePeople.filter((person) => {
     const matchesSearch =
         !searchTerm ||
         person.name.toLowerCase().includes(searchTerm)
@@ -28,11 +34,20 @@ const filteredPeople = computed(() => {
 
     return matchesSearch && matchesGender
   })
+
+  return [...filtered].sort((first, second) => {
+    if (sort.value === 'name-desc') {
+      return second.name.localeCompare(first.name)
+    }
+    return first.name.localeCompare(second.name)
+  })
 })
 
 const clearFilters = () => {
   search.value = ''
   gender.value = 'all'
+  sort.value = 'name-asc'
+  router.replace({ query: { ...route.query, favorites: undefined } })
 }
 
 const openCreateModal = () => {
@@ -52,49 +67,73 @@ const handleDelete = (id: string) => {
 }
 
 onMounted(() => {
+  showFavoritesOnly.value = route.query.favorites === 'true'
   store.fetchPeople()
 })
+
+watch(
+  () => route.query.favorites,
+  (value) => {
+    showFavoritesOnly.value = value === 'true'
+  },
+)
 </script>
 <template>
   <main class="people-view">
-    <section class="people-header">
-      <h2>People</h2>
-      <button type="button" @click="openCreateModal">Add Character</button>
-    </section>
+      <section class="my-6 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-3">
+        <input
+            v-model="search"
+            type="text"
+            placeholder="Search people..."
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none dark:bg-gray-800 dark:border-gray-700"
+        />
 
-    <section class="filters">
-      <input
-          v-model="search"
-          type="text"
-          placeholder="Search people..."
-      />
+        <select
+          v-model="gender"
+          class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none dark:bg-gray-800 dark:border-gray-700"
+        >
+          <option value="all">All genders</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="n/a">N/A</option>
+        </select>
 
-      <button type="button" @click="search = search.trim()">
-        Search
-      </button>
+        <select
+          v-model="sort"
+          class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none dark:bg-gray-800 dark:border-gray-700"
+        >
+          <option value="name-asc">Name A → Z</option>
+          <option value="name-desc">Name Z → A</option>
+        </select>
+
+        <button
+            type="button"
+            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+            @click="clearFilters"
+        >
+          Clear
+        </button>
+        </div>
 
       <button
           type="button"
-          @click="clearFilters"
-      >
-        Clear
-      </button>
+            class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-lg shadow-sm transition"
+            @click="openCreateModal"
+        >
+          Add Character
+        </button>
+      </section>
 
-      <select v-model="gender">
-        <option value="all">All genders</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-        <option value="n/a">N/A</option>
-      </select>
-    </section>
+      <section class="mb-4 flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">People</h2>
+        <span class="text-sm text-gray-500">{{ filteredPeople.length }} results</span>
+      </section>
 
-    <section class="people-header">
-      <h2>People</h2>
-
-      <span>
-        {{ filteredPeople.length }} results
-      </span>
-    </section>
+      <!-- The header Favorites action controls this state through ?favorites=true. -->
+      <section v-if="showFavoritesOnly" class="mb-4 text-sm font-medium text-yellow-700">
+        Showing favorites only
+      </section>
 
     <section
         v-if="store.isLoading"
@@ -192,6 +231,20 @@ button {
 .ghost-button {
   background: #f3f4f6;
   color: #111827;
+}
+
+.favorites-toggle {
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: white;
+  color: #111827;
+}
+
+.favorites-toggle.active {
+  border-color: #f59e0b;
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .results-header {

@@ -16,6 +16,10 @@ const relatedFilms = computed<Film[]>(() => {
   return store.apiFilms.filter((film) => filmUrls.has(film.id))
 })
 
+const isFavorite = computed(() =>
+  character.value ? store.favorites.includes(character.value.id) : false,
+)
+
 onMounted(() => {
   store.fetchInitialData()
 })
@@ -41,6 +45,15 @@ onMounted(() => {
     <template v-else>
       <section class="detail-card">
         <h1>{{ character.name }}</h1>
+        <button
+          type="button"
+          class="favorite-button"
+          :class="{ active: isFavorite }"
+          :aria-label="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
+          @click="store.toggleFavorite(character.id)"
+        >
+          {{ isFavorite ? '⭐' : '☆' }}
+        </button>
         <dl class="details-grid">
           <div><dt>Height</dt><dd>{{ character.height }}</dd></div>
           <div><dt>Mass</dt><dd>{{ character.mass }}</dd></div>
@@ -76,6 +89,13 @@ onMounted(() => {
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
 }
 .detail-card h1, .detail-card h2, .film-card h3 { margin-top: 0; }
+.favorite-button {
+  border: 0;
+  background: transparent;
+  color: #f59e0b;
+  cursor: pointer;
+  font-size: 1.5rem;
+}
 .details-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));

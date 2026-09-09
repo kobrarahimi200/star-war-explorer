@@ -19,12 +19,14 @@ interface SwapiFilm extends Omit<Film, 'id'> {
 
 const LOCAL_PEOPLE_KEY = 'swapi_local_people'
 const DELETED_IDS_KEY = 'swapi_deleted_ids'
+const FAVORITES_KEY = 'swapi_favorites'
 
 export const useSwapiStore = defineStore('swapi', () => {
   const apiPeople = ref<Person[]>([])
   const apiFilms = ref<Film[]>([])
   const localPeople = ref<Person[]>(readStorage<Person[]>(LOCAL_PEOPLE_KEY, []))
   const deletedIds = ref<string[]>(readStorage<string[]>(DELETED_IDS_KEY, []))
+  const favorites = ref<string[]>(readStorage<string[]>(FAVORITES_KEY, []))
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -37,9 +39,14 @@ export const useSwapiStore = defineStore('swapi', () => {
     return [...merged.values()].filter((person) => !deletedIds.value.includes(person.id))
   })
 
+  const favoritePeople = computed<Person[]>(() =>
+    allPeople.value.filter((person) => favorites.value.includes(person.id)),
+  )
+
   const persistLocalState = () => {
     localStorage.setItem(LOCAL_PEOPLE_KEY, JSON.stringify(localPeople.value))
     localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(deletedIds.value))
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites.value))
   }
 
   const fetchInitialData = async () => {
@@ -125,11 +132,24 @@ export const useSwapiStore = defineStore('swapi', () => {
     }
 
     localPeople.value = localPeople.value.filter((person) => person.id !== id)
+    favorites.value = favorites.value.filter((favoriteId) => favoriteId !== id)
     persistLocalState()
+  }
+
+  const toggleFavorite = (id: string) => {
+    if (favorites.value.includes(id)) {
+      favorites.value = favorites.value.filter((favoriteId) => favoriteId !== id)
+    } else {
+      favorites.value.push(id)
+    }
+
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites.value))
   }
 
   return {
     allPeople,
+    favoritePeople,
+    favorites,
     apiFilms,
     localPeople,
     deletedIds,
@@ -139,6 +159,7 @@ export const useSwapiStore = defineStore('swapi', () => {
     fetchInitialData,
     savePerson,
     deletePerson,
+    toggleFavorite,
   }
 })
 
