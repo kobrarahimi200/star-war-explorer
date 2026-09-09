@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import PersonCard from '@/components/PersonCard.vue'
+import PersonModal from '@/components/PersonModal.vue'
 import { useSwapiStore } from '@/stores/useSwapiStore'
+import type { Person } from '@/components/types/swapiTypes'
 
 const store = useSwapiStore()
 
@@ -9,6 +11,8 @@ const people = computed(() => store.allPeople)
 
 const search = ref('')
 const gender = ref('all')
+const isModalOpen = ref(false)
+const personToEdit = ref<Person | null>(null)
 
 const filteredPeople = computed(() => {
   const searchTerm = search.value.trim().toLowerCase()
@@ -31,12 +35,33 @@ const clearFilters = () => {
   gender.value = 'all'
 }
 
+const openCreateModal = () => {
+  personToEdit.value = null
+  isModalOpen.value = true
+}
+
+const openEditModal = (person: Person) => {
+  personToEdit.value = person
+  isModalOpen.value = true
+}
+
+const handleDelete = (id: string) => {
+  if (confirm('Delete this character?')) {
+    store.deletePerson(id)
+  }
+}
+
 onMounted(() => {
   store.fetchPeople()
 })
 </script>
 <template>
   <main class="people-view">
+    <section class="people-header">
+      <h2>People</h2>
+      <button type="button" @click="openCreateModal">Add Character</button>
+    </section>
+
     <section class="filters">
       <input
           v-model="search"
@@ -94,6 +119,8 @@ onMounted(() => {
           v-for="person in filteredPeople"
           :key="person.id"
           :person="person"
+          @edit="openEditModal"
+          @delete="handleDelete"
       />
     </section>
 
@@ -104,6 +131,12 @@ onMounted(() => {
       <h3>No people found</h3>
       <p>Try changing your search or filter.</p>
     </section>
+
+    <PersonModal
+        :is-open="isModalOpen"
+        :person-to-edit="personToEdit"
+        @close="isModalOpen = false"
+    />
   </main>
 </template>
 <style scoped>

@@ -1,17 +1,11 @@
 export interface Person {
-    id: number
+    id: string
     name: string
     height: string
     mass: string
     gender: string
+    birth_year: string
     homeworld: string
     starships: string[]
-}
-
-export interface Starship {
-    id: number
-    name: string
-    model: string
-    manufacturer: string
-    crew: string
+    isCustom?: boolean
 }
