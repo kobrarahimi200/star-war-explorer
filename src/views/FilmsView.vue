@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useSwapiStore } from '@/stores/useSwapiStore'
+import type { Film, Person } from '@/types/swapi'
 
 const store = useSwapiStore()
 const search = ref('')
 
-const films = computed(() => {
+const films = computed<Film[]>(() => {
   const query = search.value.trim().toLowerCase()
   return store.apiFilms.filter((film) => film.title.toLowerCase().includes(query))
 })
+
+const charactersForFilm = (characters: string[]): Person[] =>
+  store.allPeople.filter((person) => person.url && characters.includes(person.url))
 
 onMounted(() => {
   store.fetchInitialData()
@@ -44,6 +49,22 @@ onMounted(() => {
           Episode {{ film.episode_id }} · {{ film.release_date }}
         </p>
         <p class="text-sm text-gray-500 dark:text-gray-400">Director: {{ film.director }}</p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <RouterLink
+            v-for="person in charactersForFilm(film.characters).slice(0, 5)"
+            :key="person.id"
+            :to="{ name: 'person-detail', params: { id: person.id } }"
+            class="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-800 transition hover:bg-yellow-200"
+          >
+            {{ person.name }}
+          </RouterLink>
+          <span
+            v-if="charactersForFilm(film.characters).length > 5"
+            class="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600"
+          >
+            +{{ charactersForFilm(film.characters).length - 5 }} more
+          </span>
+        </div>
       </article>
     </section>
   </main>

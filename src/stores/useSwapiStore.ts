@@ -2,7 +2,8 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { Film, Person } from '@/types/swapi'
 
-interface SwapiPerson {
+interface SwapiPersonResponse {
+  url?: string
   name: string
   height: string
   mass: string
@@ -13,7 +14,7 @@ interface SwapiPerson {
   films: string[]
 }
 
-interface SwapiFilm extends Omit<Film, 'id'> {
+interface SwapiFilmResponse extends Omit<Film, 'id'> {
   url: string
 }
 
@@ -43,13 +44,13 @@ export const useSwapiStore = defineStore('swapi', () => {
     allPeople.value.filter((person) => favorites.value.includes(person.id)),
   )
 
-  const persistLocalState = () => {
+  const persistLocalState = (): void => {
     localStorage.setItem(LOCAL_PEOPLE_KEY, JSON.stringify(localPeople.value))
     localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(deletedIds.value))
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites.value))
   }
 
-  const fetchInitialData = async () => {
+  const fetchInitialData = async (): Promise<void> => {
     if (
       (apiPeople.value.length > 0 && apiFilms.value.length > 0) ||
       isLoading.value
@@ -69,14 +70,15 @@ export const useSwapiStore = defineStore('swapi', () => {
       }
 
       const peopleData = await peopleResponse.json() as
-        { results?: SwapiPerson[] } | SwapiPerson[]
+        { results?: SwapiPersonResponse[] } | SwapiPersonResponse[]
       const filmsData = await filmsResponse.json() as
-        { results?: SwapiFilm[] } | SwapiFilm[]
+        { results?: SwapiFilmResponse[] } | SwapiFilmResponse[]
       const results = Array.isArray(peopleData) ? peopleData : peopleData.results ?? []
       const films = Array.isArray(filmsData) ? filmsData : filmsData.results ?? []
 
       apiPeople.value = results.map((person, index): Person => ({
         id: String(index + 1),
+        url: person.url,
         name: person.name,
         height: person.height,
         mass: person.mass,
@@ -98,12 +100,12 @@ export const useSwapiStore = defineStore('swapi', () => {
 
   }
 
-  const fetchPeople = fetchInitialData
+  const fetchPeople: () => Promise<void> = fetchInitialData
 
-  const getFilmsForPerson = (filmUrls: string[]) =>
+  const getFilmsForPerson = (filmUrls: string[]): Film[] =>
     apiFilms.value.filter((film) => filmUrls.includes(film.url))
 
-  const savePerson = (data: Partial<Person> & { id?: string }) => {
+  const savePerson = (data: Partial<Person> & { id?: string }): void => {
     const id = data.id ?? `custom_${Date.now()}`
     const person: Person = {
       id,
@@ -129,7 +131,7 @@ export const useSwapiStore = defineStore('swapi', () => {
     persistLocalState()
   }
 
-  const deletePerson = (id: string) => {
+  const deletePerson = (id: string): void => {
     if (!deletedIds.value.includes(id)) {
       deletedIds.value.push(id)
     }
@@ -139,7 +141,7 @@ export const useSwapiStore = defineStore('swapi', () => {
     persistLocalState()
   }
 
-  const toggleFavorite = (id: string) => {
+  const toggleFavorite = (id: string): void => {
     if (favorites.value.includes(id)) {
       favorites.value = favorites.value.filter((favoriteId) => favoriteId !== id)
     } else {

@@ -15,8 +15,8 @@ defineEmits<{
 
 const route = useRoute()
 const store = useSwapiStore()
-const isFavorite = computed(() => store.favorites.includes(props.person.id))
-const homeworld = computed(() => {
+const isFavorite = computed<boolean>(() => store.favorites.includes(props.person.id))
+const homeworld = computed<string>(() => {
   const value = props.person.homeworld
   if (!value.startsWith('http')) return value
   return value.split('/').filter(Boolean).at(-1) ?? 'Unknown'

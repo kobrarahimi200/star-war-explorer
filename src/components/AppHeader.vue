@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 
-const showFavorites = () => {
+const showFavorites = (): void => {
   router.push({
     name: 'overview',
     query: { ...route.query, favorites: 'true' },

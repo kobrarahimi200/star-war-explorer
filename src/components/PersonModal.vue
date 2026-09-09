@@ -27,7 +27,7 @@ const errors = reactive({
   name: '',
 })
 
-const resetForm = () => {
+const resetForm = (): void => {
   form.id = props.personToEdit?.id
   form.name = props.personToEdit?.name ?? ''
   form.height = props.personToEdit?.height ?? ''
@@ -45,12 +45,12 @@ watch(
   { immediate: true },
 )
 
-const validate = () => {
+const validate = (): boolean => {
   errors.name = form.name.trim() ? '' : 'Name is required.'
   return !errors.name
 }
 
-const submit = () => {
+const submit = (): void => {
   if (!validate()) return
 
   store.savePerson({

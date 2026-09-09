@@ -6,7 +6,7 @@ export const readPeopleQuery = (
   query: LocationQuery,
   param: PeopleQueryParam,
   fallback: string,
-) => {
+): string => {
   const value = query[param]
 
   if (typeof value === 'string') {

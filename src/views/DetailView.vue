@@ -1,23 +1,30 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useSwapiStore } from '@/stores/useSwapiStore'
-import type { Film, Person } from '@/types/swapi'
+import type { Film, Person, PersonRouteParams } from '@/types/swapi'
 
 const route = useRoute()
+const router = useRouter()
 const store = useSwapiStore()
 
 const character = computed<Person | undefined>(() =>
-  store.allPeople.find((person) => person.id === String(route.params.id)),
+  store.allPeople.find((person) =>
+    person.id === String((route.params as PersonRouteParams).id ?? '').trim(),
+  ),
 )
 
 const relatedFilms = computed<Film[]>(() => {
   return store.getFilmsForPerson(character.value?.films ?? [])
 })
 
-const isFavorite = computed(() =>
+const isFavorite = computed<boolean>(() =>
   character.value ? store.favorites.includes(character.value.id) : false,
 )
+
+const openFilm = (id: string): void => {
+  router.push(`/films/${encodeURIComponent(id)}`)
+}
 
 onMounted(() => {
   store.fetchInitialData()
@@ -70,17 +77,20 @@ onMounted(() => {
       </section>
 
       <section>
-        <h2 class="mb-4 text-2xl font-bold">Films</h2>
+        <h2 class="mb-4 text-2xl font-bold">Appears In Films</h2>
         <div v-if="relatedFilms.length" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <article
             v-for="film in relatedFilms"
             :key="film.id"
-            class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm"
+            role="link"
+            tabindex="0"
+            class="cursor-pointer rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            @click="openFilm(film.id)"
+            @keydown.enter="openFilm(film.id)"
           >
             <h3 class="mb-2 text-xl font-bold">{{ film.title }}</h3>
             <p class="text-sm text-gray-500">Episode {{ film.episode_id }}</p>
-            <p class="text-sm text-gray-500">Release date: {{ film.release_date }}</p>
-            <p class="text-sm text-gray-500">Director: {{ film.director }}</p>
+            <p class="text-sm text-gray-500">Release year: {{ film.release_date.slice(0, 4) }}</p>
           </article>
         </div>
         <p v-else class="text-gray-500">No related films found.</p>

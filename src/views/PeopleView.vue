@@ -10,14 +10,14 @@ import { readPeopleQuery, updatePeopleQuery, type PeopleQueryParam } from './peo
 const store = useSwapiStore()
 const route = useRoute()
 const router = useRouter()
-const searchQuery = computed(() => readPeopleQuery(route.query, 'q', ''))
-const genderFilter = computed(() => readPeopleQuery(route.query, 'gender', 'all'))
-const sortOption = computed(() => readPeopleQuery(route.query, 'sort', 'name-asc'))
-const showFavoritesOnly = computed(() => route.query.favorites === 'true')
+const searchQuery = computed<string>(() => readPeopleQuery(route.query, 'q', ''))
+const genderFilter = computed<string>(() => readPeopleQuery(route.query, 'gender', 'all'))
+const sortOption = computed<string>(() => readPeopleQuery(route.query, 'sort', 'name-asc'))
+const showFavoritesOnly = computed<boolean>(() => route.query.favorites === 'true')
 const isModalOpen = ref(false)
 const personToEdit = ref<Person | null>(null)
 
-const updateQuery = (param: PeopleQueryParam, value: string | boolean) => {
+const updateQuery = (param: PeopleQueryParam, value: string | boolean): void => {
   router.replace({ query: updatePeopleQuery(route.query, param, value) })
 }
 
@@ -39,10 +39,14 @@ const filteredPeople = computed<Person[]>(() => {
   })
 })
 
-const clearFilters = () => router.replace({ query: { ...route.query, q: undefined, gender: undefined, sort: undefined, favorites: undefined } })
-const openCreateModal = () => { personToEdit.value = null; isModalOpen.value = true }
-const openEditModal = (person: Person) => { personToEdit.value = person; isModalOpen.value = true }
-const handleDelete = (id: string) => {
+const clearFilters = (): void => {
+  router.replace({
+    query: { ...route.query, q: undefined, gender: undefined, sort: undefined, favorites: undefined },
+  })
+}
+const openCreateModal = (): void => { personToEdit.value = null; isModalOpen.value = true }
+const openEditModal = (person: Person): void => { personToEdit.value = person; isModalOpen.value = true }
+const handleDelete = (id: string): void => {
   if (confirm('Delete this character?')) store.deletePerson(id)
 }
 
