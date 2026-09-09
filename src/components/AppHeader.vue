@@ -1,8 +1,20 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+const isDark = ref(false)
+
+const applyTheme = (dark: boolean): void => {
+  isDark.value = dark
+  document.documentElement.classList.toggle('dark', dark)
+  localStorage.setItem('theme', dark ? 'dark' : 'light')
+}
+
+const toggleTheme = (): void => {
+  applyTheme(!isDark.value)
+}
 
 const showFavorites = (): void => {
   router.push({
@@ -10,6 +22,10 @@ const showFavorites = (): void => {
     query: { ...route.query, favorites: 'true' },
   })
 }
+
+onMounted(() => {
+  applyTheme(localStorage.getItem('theme') === 'dark')
+})
 </script>
 
 <template>
@@ -41,6 +57,14 @@ const showFavorites = (): void => {
         @click="showFavorites"
       >
         ⭐ Favorites
+      </button>
+      <button
+        type="button"
+        class="px-3 py-1.5 text-gray-300 hover:text-white hover:bg-slate-800 rounded-lg text-sm transition"
+        :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+        @click="toggleTheme"
+      >
+        {{ isDark ? '☀️' : '🌙' }}
       </button>
     </nav>
   </header>

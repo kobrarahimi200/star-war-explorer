@@ -28,6 +28,10 @@ export const useSwapiStore = defineStore('swapi', () => {
   const localPeople = ref<Person[]>(readStorage<Person[]>(LOCAL_PEOPLE_KEY, []))
   const deletedIds = ref<string[]>(readStorage<string[]>(DELETED_IDS_KEY, []))
   const favorites = ref<string[]>(readStorage<string[]>(FAVORITES_KEY, []))
+  const lastDeleted = ref<Person | null>(null)
+  const lastDeletedWasLocal = ref(false)
+  const lastDeletedWasFavorite = ref(false)
+  let deleteTimeout: ReturnType<typeof setTimeout> | null = null
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -132,6 +136,14 @@ export const useSwapiStore = defineStore('swapi', () => {
   }
 
   const deletePerson = (id: string): void => {
+    const person = allPeople.value.find((item) => item.id === id)
+    if (!person) return
+
+    lastDeleted.value = person
+    lastDeletedWasLocal.value = localPeople.value.some((item) => item.id === id)
+    lastDeletedWasFavorite.value = favorites.value.includes(id)
+
+    if (deleteTimeout) clearTimeout(deleteTimeout)
     if (!deletedIds.value.includes(id)) {
       deletedIds.value.push(id)
     }
@@ -139,6 +151,31 @@ export const useSwapiStore = defineStore('swapi', () => {
     localPeople.value = localPeople.value.filter((person) => person.id !== id)
     favorites.value = favorites.value.filter((favoriteId) => favoriteId !== id)
     persistLocalState()
+
+    deleteTimeout = setTimeout(() => {
+      lastDeleted.value = null
+      lastDeletedWasLocal.value = false
+      lastDeletedWasFavorite.value = false
+    }, 5000)
+  }
+
+  const undoDelete = (): void => {
+    const person = lastDeleted.value
+    if (!person) return
+
+    deletedIds.value = deletedIds.value.filter((deletedId) => deletedId !== person.id)
+    if (lastDeletedWasLocal.value && !localPeople.value.some((item) => item.id === person.id)) {
+      localPeople.value.push(person)
+    }
+    if (lastDeletedWasFavorite.value && !favorites.value.includes(person.id)) {
+      favorites.value.push(person.id)
+    }
+
+    persistLocalState()
+    if (deleteTimeout) clearTimeout(deleteTimeout)
+    lastDeleted.value = null
+    lastDeletedWasLocal.value = false
+    lastDeletedWasFavorite.value = false
   }
 
   const toggleFavorite = (id: string): void => {
@@ -155,6 +192,7 @@ export const useSwapiStore = defineStore('swapi', () => {
     allPeople,
     favoritePeople,
     favorites,
+    lastDeleted,
     apiFilms,
     getFilmsForPerson,
     localPeople,
@@ -165,6 +203,7 @@ export const useSwapiStore = defineStore('swapi', () => {
     fetchInitialData,
     savePerson,
     deletePerson,
+    undoDelete,
     toggleFavorite,
   }
 })

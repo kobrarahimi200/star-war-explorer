@@ -116,5 +116,20 @@ onMounted(() => store.fetchPeople())
     </p>
 
     <PersonModal :is-open="isModalOpen" :person-to-edit="personToEdit" @close="isModalOpen = false" />
+
+    <div
+      v-if="store.lastDeleted"
+      class="fixed bottom-6 right-6 z-50 flex items-center gap-4 rounded-lg bg-gray-900 px-4 py-3 text-white shadow-lg dark:bg-gray-100 dark:text-gray-900"
+      role="status"
+    >
+      <span>{{ store.lastDeleted.name }} deleted.</span>
+      <button
+        type="button"
+        class="font-semibold text-yellow-400 hover:text-yellow-300 dark:text-yellow-700 dark:hover:text-yellow-800"
+        @click="store.undoDelete"
+      >
+        Undo
+      </button>
+    </div>
   </main>
 </template>
