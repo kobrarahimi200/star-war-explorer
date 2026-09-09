@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PersonCard from '@/components/PersonCard.vue'
 import PersonModal from '@/components/PersonModal.vue'
@@ -10,15 +10,34 @@ const store = useSwapiStore()
 const route = useRoute()
 const router = useRouter()
 
-const search = ref('')
-const gender = ref('all')
-const sort = ref('name-asc')
-const showFavoritesOnly = ref(false)
+type QueryParam = 'q' | 'gender' | 'sort' | 'favorites'
+
+const updateQueryParams = (param: QueryParam, newValue: string | boolean) => {
+  const query = { ...route.query }
+
+  if (
+    newValue === '' ||
+    newValue === false ||
+    (param === 'gender' && newValue === 'all') ||
+    (param === 'sort' && newValue === 'name-asc')
+  ) {
+    delete query[param]
+  } else {
+    query[param] = String(newValue)
+  }
+
+  router.replace({ query })
+}
+
+const searchQuery = computed(() => String(route.query.q ?? ''))
+const genderFilter = computed(() => String(route.query.gender ?? 'all'))
+const sortOption = computed(() => String(route.query.sort ?? 'name-asc'))
+const showFavoritesOnly = computed(() => route.query.favorites === 'true')
 const isModalOpen = ref(false)
 const personToEdit = ref<Person | null>(null)
 
 const filteredPeople = computed<Person[]>(() => {
-  const searchTerm = search.value.trim().toLowerCase()
+  const searchTerm = searchQuery.value.trim().toLowerCase()
   const basePeople = showFavoritesOnly.value
     ? store.favoritePeople
     : store.allPeople
@@ -29,25 +48,33 @@ const filteredPeople = computed<Person[]>(() => {
         person.name.toLowerCase().includes(searchTerm)
 
     const matchesGender =
-        gender.value === 'all' ||
-        person.gender.toLowerCase() === gender.value
+        genderFilter.value === 'all' ||
+        person.gender.toLowerCase() === genderFilter.value
 
     return matchesSearch && matchesGender
   })
 
   return [...filtered].sort((first, second) => {
-    if (sort.value === 'name-desc') {
+    if (sortOption.value === 'name-desc') {
       return second.name.localeCompare(first.name)
+    }
+    if (sortOption.value === 'height-asc' || sortOption.value === 'height-desc') {
+      const firstHeight = Number.parseInt(first.height, 10)
+      const secondHeight = Number.parseInt(second.height, 10)
+      const difference = firstHeight - secondHeight
+      return sortOption.value === 'height-desc' ? -difference : difference
     }
     return first.name.localeCompare(second.name)
   })
 })
 
 const clearFilters = () => {
-  search.value = ''
-  gender.value = 'all'
-  sort.value = 'name-asc'
-  router.replace({ query: { ...route.query, favorites: undefined } })
+  const query = { ...route.query }
+  delete query.q
+  delete query.gender
+  delete query.sort
+  delete query.favorites
+  router.replace({ query })
 }
 
 const openCreateModal = () => {
@@ -67,31 +94,25 @@ const handleDelete = (id: string) => {
 }
 
 onMounted(() => {
-  showFavoritesOnly.value = route.query.favorites === 'true'
   store.fetchPeople()
 })
-
-watch(
-  () => route.query.favorites,
-  (value) => {
-    showFavoritesOnly.value = value === 'true'
-  },
-)
 </script>
 <template>
   <main class="people-view">
       <section class="my-6 flex flex-wrap items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3">
         <input
-            v-model="search"
+            :value="searchQuery"
             type="text"
             placeholder="Search people..."
             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none dark:bg-gray-800 dark:border-gray-700"
+            @input="updateQueryParams('q', ($event.target as HTMLInputElement).value)"
         />
 
         <select
-          v-model="gender"
+          :value="genderFilter"
           class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none dark:bg-gray-800 dark:border-gray-700"
+          @change="updateQueryParams('gender', ($event.target as HTMLSelectElement).value)"
         >
           <option value="all">All genders</option>
           <option value="male">Male</option>
@@ -100,11 +121,14 @@ watch(
         </select>
 
         <select
-          v-model="sort"
+          :value="sortOption"
           class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none dark:bg-gray-800 dark:border-gray-700"
+          @change="updateQueryParams('sort', ($event.target as HTMLSelectElement).value)"
         >
           <option value="name-asc">Name A → Z</option>
           <option value="name-desc">Name Z → A</option>
+          <option value="height-asc">Height ↑</option>
+          <option value="height-desc">Height ↓</option>
         </select>
 
         <button
