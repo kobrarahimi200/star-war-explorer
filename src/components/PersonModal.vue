@@ -50,6 +50,7 @@ const submit = () => {
     birth_year: form.birth_year,
     homeworld: props.personToEdit?.homeworld,
     starships: props.personToEdit?.starships,
+    films: props.personToEdit?.films,
   })
   emit('close')
 }

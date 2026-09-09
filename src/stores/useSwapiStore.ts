@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { getPeople } from '@/services/swapi'
-import type { Person } from '@/components/types/swapiTypes'
+import type { Film, Person } from '@/components/types/swapiTypes'
 
 interface SwapiPerson {
   name: string
@@ -11,6 +10,11 @@ interface SwapiPerson {
   birth_year: string
   homeworld: string
   starships: string[]
+  films: string[]
+}
+
+interface SwapiFilm extends Omit<Film, 'id'> {
+  url: string
 }
 
 const LOCAL_PEOPLE_KEY = 'swapi_local_people'
@@ -18,6 +22,7 @@ const DELETED_IDS_KEY = 'swapi_deleted_ids'
 
 export const useSwapiStore = defineStore('swapi', () => {
   const apiPeople = ref<Person[]>([])
+  const apiFilms = ref<Film[]>([])
   const localPeople = ref<Person[]>(readStorage<Person[]>(LOCAL_PEOPLE_KEY, []))
   const deletedIds = ref<string[]>(readStorage<string[]>(DELETED_IDS_KEY, []))
   const isLoading = ref(false)
@@ -37,15 +42,31 @@ export const useSwapiStore = defineStore('swapi', () => {
     localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(deletedIds.value))
   }
 
-  const fetchPeople = async () => {
-    if (apiPeople.value.length > 0 || isLoading.value) return
+  const fetchInitialData = async () => {
+    if (
+      (apiPeople.value.length > 0 && apiFilms.value.length > 0) ||
+      isLoading.value
+    ) return
 
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await getPeople() as { results?: SwapiPerson[] } | SwapiPerson[]
-      const results = Array.isArray(response) ? response : response.results ?? []
+      const [peopleResponse, filmsResponse] = await Promise.all([
+        fetch('https://swapi.info/api/people'),
+        fetch('https://swapi.info/api/films'),
+      ])
+
+      if (!peopleResponse.ok || !filmsResponse.ok) {
+        throw new Error('Failed to load people and films')
+      }
+
+      const peopleData = await peopleResponse.json() as
+        { results?: SwapiPerson[] } | SwapiPerson[]
+      const filmsData = await filmsResponse.json() as
+        { results?: SwapiFilm[] } | SwapiFilm[]
+      const results = Array.isArray(peopleData) ? peopleData : peopleData.results ?? []
+      const films = Array.isArray(filmsData) ? filmsData : filmsData.results ?? []
 
       apiPeople.value = results.map((person, index): Person => ({
         id: String(index + 1),
@@ -56,13 +77,21 @@ export const useSwapiStore = defineStore('swapi', () => {
         birth_year: person.birth_year,
         homeworld: person.homeworld,
         starships: person.starships,
+        films: person.films,
+      }))
+      apiFilms.value = films.map((film): Film => ({
+        ...film,
+        id: film.url,
       }))
     } catch (err: unknown) {
       error.value = err instanceof Error ? err.message : 'Failed to load people'
     } finally {
       isLoading.value = false
     }
+
   }
+
+  const fetchPeople = fetchInitialData
 
   const savePerson = (data: Partial<Person> & { id?: string }) => {
     const id = data.id ?? `custom_${Date.now()}`
@@ -75,6 +104,7 @@ export const useSwapiStore = defineStore('swapi', () => {
       birth_year: data.birth_year?.trim() || 'unknown',
       homeworld: data.homeworld || 'unknown',
       starships: data.starships || [],
+      films: data.films || [],
       isCustom: true,
     }
 
@@ -100,11 +130,13 @@ export const useSwapiStore = defineStore('swapi', () => {
 
   return {
     allPeople,
+    apiFilms,
     localPeople,
     deletedIds,
     isLoading,
     error,
     fetchPeople,
+    fetchInitialData,
     savePerson,
     deletePerson,
   }

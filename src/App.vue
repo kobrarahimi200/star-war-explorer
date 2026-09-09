@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import PeopleView from '@/views/PeopleView.vue';
 </script>
 
 <template>
@@ -15,7 +14,7 @@ import PeopleView from '@/views/PeopleView.vue';
     </header>
 
     <main class="main-content">
-      <PeopleView />
+      <RouterView />
     </main>
   </div>
 </template>

@@ -7,7 +7,7 @@ import type { Person } from '@/components/types/swapiTypes'
 
 const store = useSwapiStore()
 
-const people = computed(() => store.allPeople)
+const people = computed<Person[]>(() => store.allPeople)
 
 const search = ref('')
 const gender = ref('all')

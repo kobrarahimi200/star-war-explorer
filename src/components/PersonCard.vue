@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRoute } from 'vue-router'
 import type { Person } from '@/components/types/swapiTypes'
 
 defineProps<{
@@ -9,6 +10,8 @@ defineEmits<{
   edit: [person: Person]
   delete: [id: string]
 }>()
+
+const route = useRoute()
 </script>
 
 <template>
@@ -21,6 +24,12 @@ defineEmits<{
     </div>
 
     <div class="card-actions">
+      <RouterLink
+        :to="{ name: 'person-detail', params: { id: person.id }, query: route.query }"
+        class="details-link"
+      >
+        View Details
+      </RouterLink>
       <button type="button" @click="$emit('edit', person)">Edit</button>
       <button type="button" class="delete-button" @click="$emit('delete', person.id)">Delete</button>
     </div>
@@ -58,6 +67,12 @@ defineEmits<{
   border-radius: 0.5rem;
   padding: 0.4rem 0.7rem;
   cursor: pointer;
+}
+
+.details-link {
+  padding: 0.4rem 0.7rem;
+  color: #1d4ed8;
+  text-decoration: none;
 }
 
 .delete-button {
