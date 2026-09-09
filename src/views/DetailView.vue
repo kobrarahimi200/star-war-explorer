@@ -25,87 +25,66 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="detail-view">
-    <RouterLink :to="{ name: 'overview', query: route.query }" class="back-link">
+  <main class="grid gap-5">
+    <RouterLink
+      :to="{ name: 'overview', query: route.query }"
+      class="font-semibold text-blue-700 hover:underline"
+    >
       ← Back to Overview
     </RouterLink>
 
-    <section v-if="store.isLoading" class="detail-card">
+    <section v-if="store.isLoading" class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
       <p>Loading character...</p>
     </section>
 
-    <section v-else-if="!character" class="detail-card">
-      <h2>Character not found</h2>
-      <RouterLink :to="{ name: 'overview', query: route.query }" class="button-link">
+    <section v-else-if="!character" class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+      <h2 class="mb-4 text-2xl font-bold">Character not found</h2>
+      <RouterLink
+        :to="{ name: 'overview', query: route.query }"
+        class="font-semibold text-blue-700 hover:underline"
+      >
         Back to Overview
       </RouterLink>
     </section>
 
     <template v-else>
-      <section class="detail-card">
-        <h1>{{ character.name }}</h1>
+      <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div class="mb-5 flex items-start justify-between gap-4">
+          <h1 class="text-3xl font-extrabold">{{ character.name }}</h1>
         <button
           type="button"
-          class="favorite-button"
+          class="text-2xl text-yellow-500 transition hover:scale-110"
           :class="{ active: isFavorite }"
           :aria-label="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
           @click="store.toggleFavorite(character.id)"
         >
           {{ isFavorite ? '⭐' : '☆' }}
         </button>
-        <dl class="details-grid">
-          <div><dt>Height</dt><dd>{{ character.height }}</dd></div>
-          <div><dt>Mass</dt><dd>{{ character.mass }}</dd></div>
-          <div><dt>Gender</dt><dd>{{ character.gender }}</dd></div>
-          <div><dt>Birth Year</dt><dd>{{ character.birth_year }}</dd></div>
+        </div>
+        <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div><dt class="text-sm text-gray-500">Height</dt><dd class="font-semibold">{{ character.height }}</dd></div>
+          <div><dt class="text-sm text-gray-500">Mass</dt><dd class="font-semibold">{{ character.mass }}</dd></div>
+          <div><dt class="text-sm text-gray-500">Gender</dt><dd class="font-semibold">{{ character.gender }}</dd></div>
+          <div><dt class="text-sm text-gray-500">Birth Year</dt><dd class="font-semibold">{{ character.birth_year }}</dd></div>
         </dl>
       </section>
 
-      <section class="films-section">
-        <h2>Films</h2>
-        <div v-if="relatedFilms.length" class="films-grid">
-          <article v-for="film in relatedFilms" :key="film.id" class="film-card">
-            <h3>{{ film.title }}</h3>
-            <p>Episode {{ film.episode_id }}</p>
-            <p>Release date: {{ film.release_date }}</p>
-            <p>Director: {{ film.director }}</p>
+      <section>
+        <h2 class="mb-4 text-2xl font-bold">Films</h2>
+        <div v-if="relatedFilms.length" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <article
+            v-for="film in relatedFilms"
+            :key="film.id"
+            class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm"
+          >
+            <h3 class="mb-2 text-xl font-bold">{{ film.title }}</h3>
+            <p class="text-sm text-gray-500">Episode {{ film.episode_id }}</p>
+            <p class="text-sm text-gray-500">Release date: {{ film.release_date }}</p>
+            <p class="text-sm text-gray-500">Director: {{ film.director }}</p>
           </article>
         </div>
-        <p v-else class="muted">No related films found.</p>
+        <p v-else class="text-gray-500">No related films found.</p>
       </section>
     </template>
   </main>
 </template>
-
-<style scoped>
-.detail-view { display: grid; gap: 1.25rem; }
-.back-link, .button-link { color: #1d4ed8; text-decoration: none; font-weight: 600; }
-.detail-card, .film-card {
-  padding: 1.5rem;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 1rem;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
-}
-.detail-card h1, .detail-card h2, .film-card h3 { margin-top: 0; }
-.favorite-button {
-  border: 0;
-  background: transparent;
-  color: #f59e0b;
-  cursor: pointer;
-  font-size: 1.5rem;
-}
-.details-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
-}
-dt { color: #6b7280; font-size: 0.875rem; }
-dd { margin: 0.25rem 0 0; font-weight: 600; }
-.films-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-.film-card p, .muted { color: #4b5563; }
-</style>

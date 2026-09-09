@@ -57,7 +57,7 @@ onMounted(() => store.fetchPeople())
           :value="searchQuery"
           type="search"
           placeholder="Search people..."
-          class="min-w-56 flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          class="min-w-56 flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
           @input="updateQuery('q', ($event.target as HTMLInputElement).value)"
         />
         <select
@@ -83,7 +83,7 @@ onMounted(() => store.fetchPeople())
         <button class="px-3 py-2 text-sm text-gray-600 hover:text-gray-900" @click="clearFilters">Clear</button>
       </div>
       <button
-        class="rounded-lg bg-yellow-500 px-4 py-2 font-semibold text-black shadow-sm transition hover:bg-yellow-600"
+        class="rounded-lg bg-yellow-500 px-3 py-2 text-sm font-semibold text-black shadow-sm transition hover:bg-yellow-600"
         @click="openCreateModal"
       >
         Add Character
@@ -98,7 +98,7 @@ onMounted(() => store.fetchPeople())
     <p v-if="showFavoritesOnly" class="mb-4 text-sm font-medium text-yellow-700">Showing favorites only</p>
     <p v-if="store.isLoading" class="rounded-xl bg-white p-6 text-gray-500 shadow-sm">Loading people...</p>
     <p v-else-if="store.error" class="rounded-xl bg-white p-6 text-red-600 shadow-sm">{{ store.error }}</p>
-    <section v-else-if="filteredPeople.length" class="grid gap-4">
+    <section v-else-if="filteredPeople.length" class="my-6 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
       <PersonCard
         v-for="person in filteredPeople"
         :key="person.id"
