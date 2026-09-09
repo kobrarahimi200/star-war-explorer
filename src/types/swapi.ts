@@ -1,43 +1,54 @@
 export interface Person {
-  id: string
-  url?: string
-  name: string
-  height: string
-  mass: string
-  gender: string
-  birth_year: string
-  homeworld: string
-  starships: string[]
-  films: string[]
-  isCustom?: boolean
+    id: string
+    url?: string
+    name: string
+    height: string
+    mass: string
+    gender: string
+    birth_year: string
+    homeworld: string
+    starships: string[]
+    films: string[]
+    isCustom?: boolean
 }
 
 export interface Film {
-  id: string
-  title: string
-  episode_id: number
-  opening_crawl: string
-  release_date: string
-  director: string
-  producer: string
-  url: string
-  characters: string[]
+    id: string
+    title: string
+    episode_id: number
+    opening_crawl: string
+    release_date: string
+    director: string
+    producer: string
+    url: string
+    characters: string[]
 }
 
-export interface SwapiStoreState {
-  apiPeople: Person[]
-  apiFilms: Film[]
-  localPeople: Person[]
-  deletedIds: string[]
-  favorites: string[]
-  isLoading: boolean
-  error: string | null
+export interface SwapiPersonResponse {
+    url?: string
+    name: string
+    height: string
+    mass: string
+    gender: string
+    birth_year: string
+    homeworld: string
+    starships: string[]
+    films: string[]
 }
 
 export interface PersonRouteParams {
-  id?: string | string[]
+    id?: string | string[]
 }
 
 export interface FilmRouteParams {
-  id?: string | string[]
+    id?: string | string[]
 }
+
+export interface SwapiFilmResponse extends Omit<Film, 'id'> {
+    url: string
+}
+
+export type PeopleQueryParam = 'q' | 'gender' | 'sort' | 'favorites'
+
+
+export type FormField = 'name' | 'height' | 'mass' | 'gender' | 'birth_year'

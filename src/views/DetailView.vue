@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { useSwapiStore } from '@/stores/useSwapiStore'
-import type { Film, Person, PersonRouteParams } from '@/types/swapi'
+import {computed, onMounted} from 'vue'
+import {RouterLink, useRoute, useRouter} from 'vue-router'
+import {useSwapiStore} from '@/stores/useSwapiStore'
+import type {Film, Person, PersonRouteParams} from '@/types/swapi'
 
 const route = useRoute()
 const router = useRouter()
 const store = useSwapiStore()
 
 const character = computed<Person | undefined>(() =>
-  store.allPeople.find((person) =>
-    person.id === String((route.params as PersonRouteParams).id ?? '').trim(),
-  ),
+    store.allPeople.find((person) =>
+        person.id === String((route.params as PersonRouteParams).id ?? '').trim(),
+    ),
 )
 
 const relatedFilms = computed<Film[]>(() => {
@@ -19,7 +19,7 @@ const relatedFilms = computed<Film[]>(() => {
 })
 
 const isFavorite = computed<boolean>(() =>
-  character.value ? store.favorites.includes(character.value.id) : false,
+    character.value ? store.favorites.includes(character.value.id) : false,
 )
 
 const openFilm = (id: string): void => {
@@ -34,8 +34,8 @@ onMounted(() => {
 <template>
   <main class="grid gap-5">
     <RouterLink
-      :to="{ name: 'overview', query: route.query }"
-      class="font-semibold text-blue-700 hover:underline"
+        :to="{ name: 'overview', query: route.query }"
+        class="font-semibold text-blue-700 hover:underline"
     >
       ← Back to Overview
     </RouterLink>
@@ -47,8 +47,8 @@ onMounted(() => {
     <section v-else-if="!character" class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
       <h2 class="mb-4 text-2xl font-bold">Character not found</h2>
       <RouterLink
-        :to="{ name: 'overview', query: route.query }"
-        class="font-semibold text-blue-700 hover:underline"
+          :to="{ name: 'overview', query: route.query }"
+          class="font-semibold text-blue-700 hover:underline"
       >
         Back to Overview
       </RouterLink>
@@ -58,21 +58,33 @@ onMounted(() => {
       <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <div class="mb-5 flex items-start justify-between gap-4">
           <h1 class="text-3xl font-extrabold">{{ character.name }}</h1>
-        <button
-          type="button"
-          class="text-2xl text-yellow-500 transition hover:scale-110"
-          :class="{ active: isFavorite }"
-          :aria-label="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
-          @click="store.toggleFavorite(character.id)"
-        >
-          {{ isFavorite ? '⭐' : '☆' }}
-        </button>
+          <button
+              type="button"
+              class="text-2xl text-yellow-500 transition hover:scale-110"
+              :class="{ active: isFavorite }"
+              :aria-label="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
+              @click="store.toggleFavorite(character.id)"
+          >
+            {{ isFavorite ? '⭐' : '☆' }}
+          </button>
         </div>
         <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div><dt class="text-sm text-gray-500">Height</dt><dd class="font-semibold">{{ character.height }}</dd></div>
-          <div><dt class="text-sm text-gray-500">Mass</dt><dd class="font-semibold">{{ character.mass }}</dd></div>
-          <div><dt class="text-sm text-gray-500">Gender</dt><dd class="font-semibold">{{ character.gender }}</dd></div>
-          <div><dt class="text-sm text-gray-500">Birth Year</dt><dd class="font-semibold">{{ character.birth_year }}</dd></div>
+          <div>
+            <dt class="text-sm text-gray-500">Height</dt>
+            <dd class="font-semibold">{{ character.height }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-gray-500">Mass</dt>
+            <dd class="font-semibold">{{ character.mass }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-gray-500">Gender</dt>
+            <dd class="font-semibold">{{ character.gender }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-gray-500">Birth Year</dt>
+            <dd class="font-semibold">{{ character.birth_year }}</dd>
+          </div>
         </dl>
       </section>
 
@@ -80,13 +92,13 @@ onMounted(() => {
         <h2 class="mb-4 text-2xl font-bold">Appears In Films</h2>
         <div v-if="relatedFilms.length" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <article
-            v-for="film in relatedFilms"
-            :key="film.id"
-            role="link"
-            tabindex="0"
-            class="cursor-pointer rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            @click="openFilm(film.id)"
-            @keydown.enter="openFilm(film.id)"
+              v-for="film in relatedFilms"
+              :key="film.id"
+              role="link"
+              tabindex="0"
+              class="cursor-pointer rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              @click="openFilm(film.id)"
+              @keydown.enter="openFilm(film.id)"
           >
             <h3 class="mb-2 text-xl font-bold">{{ film.title }}</h3>
             <p class="text-sm text-gray-500">Episode {{ film.episode_id }}</p>

@@ -1,42 +1,41 @@
-import type { LocationQuery, LocationQueryRaw } from 'vue-router'
-
-export type PeopleQueryParam = 'q' | 'gender' | 'sort' | 'favorites'
+import type {LocationQuery, LocationQueryRaw} from 'vue-router'
+import type {PeopleQueryParam} from "@/types/swapi.ts";
 
 export const readPeopleQuery = (
-  query: LocationQuery,
-  param: PeopleQueryParam,
-  fallback: string,
+    query: LocationQuery,
+    param: PeopleQueryParam,
+    fallback: string,
 ): string => {
-  const value = query[param]
+    const value = query[param]
 
-  if (typeof value === 'string') {
-    return value
-  }
+    if (typeof value === 'string') {
+        return value
+    }
 
-  if (Array.isArray(value)) {
-    return value[0] ?? fallback
-  }
+    if (Array.isArray(value)) {
+        return value[0] ?? fallback
+    }
 
-  return fallback
+    return fallback
 }
 
 export const updatePeopleQuery = (
-  query: LocationQuery,
-  param: PeopleQueryParam,
-  value: string | boolean,
+    query: LocationQuery,
+    param: PeopleQueryParam,
+    value: string | boolean,
 ): LocationQueryRaw => {
-  const nextQuery: LocationQueryRaw = { ...query }
+    const nextQuery: LocationQueryRaw = {...query}
 
-  if (
-    value === '' ||
-    value === false ||
-    (param === 'gender' && value === 'all') ||
-    (param === 'sort' && value === 'name-asc')
-  ) {
-    delete nextQuery[param]
-  } else {
-    nextQuery[param] = String(value)
-  }
+    if (
+        value === '' ||
+        value === false ||
+        (param === 'gender' && value === 'all') ||
+        (param === 'sort' && value === 'name-asc')
+    ) {
+        delete nextQuery[param]
+    } else {
+        nextQuery[param] = String(value)
+    }
 
-  return nextQuery
+    return nextQuery
 }
